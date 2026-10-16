@@ -108,7 +108,7 @@ public class EnrolmentTests : IClassFixture<RaceDayApiFactory>
         (await leaderboard.Content.ReadAsStringAsync()).Should().Contain("00:42:15");
     }
 
-    private class EnrolmentLookup
+    private class Enrolmentlookup
     {
         public int EnrolmentId { get; set; }
         public int UserId { get; set; }
