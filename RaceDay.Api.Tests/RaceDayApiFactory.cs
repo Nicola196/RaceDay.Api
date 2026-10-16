@@ -51,7 +51,7 @@ public class RaceDayApiFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Belt-and-braces: RemoveAll for the common ones
+            // Belt-and-braces: Removeall for the common ones
             services.RemoveAll<DbContextOptions<RaceDayDbContext>>();
             services.RemoveAll<DbContextOptions>();
             services.RemoveAll<RaceDayDbContext>();
