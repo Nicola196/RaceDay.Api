@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RaceDay.Api.Data;
@@ -18,59 +17,27 @@ public class RaceDayApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Jwt:Key"] = "THIS_IS_A_TEST_ONLY_KEY_THAT_IS_LONG_ENOUGH_1234567890",
-                ["Jwt:Issuer"] = "RaceDayApi",
-                ["Jwt:Audience"] = "RaceDayClient",
-                ["Jwt:ExpiryMinutes"] = "60"
-            });
-        });
-
         builder.ConfigureServices(services =>
         {
-            // ---- STEP 1: Remove EVERY trace of the SQL Server DbContext ----
-            // EF Core 9/10 registers these; missing any one of them leaves
-            // the SQL Server provider's internal service provider alive and
-            // causes "Only a single database provider can be registered".
-
-            var toRemove = services.Where(d =>
-                d.ServiceType == typeof(DbContextOptions<RaceDayDbContext>) ||
-                d.ServiceType == typeof(DbContextOptions) ||
-                d.ServiceType == typeof(RaceDayDbContext) ||
-                d.ServiceType == typeof(IDbContextOptionsConfiguration<RaceDayDbContext>) ||
-                (d.ServiceType.IsGenericType &&
-                 d.ServiceType.GetGenericTypeDefinition().FullName != null &&
-                 d.ServiceType.GetGenericTypeDefinition().FullName.Contains("IDbContextOptionsConfiguration"))
-            ).ToList();
-
-            foreach (var descriptor in toRemove)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Belt-and-braces: Removeall for the common ones
+            // 1. Remove the real SQL Server DbContext completely
             services.RemoveAll<DbContextOptions<RaceDayDbContext>>();
             services.RemoveAll<DbContextOptions>();
             services.RemoveAll<RaceDayDbContext>();
             services.RemoveAll<IDbContextOptionsConfiguration<RaceDayDbContext>>();
 
-            // ---- STEP 2: Register the InMemory provider ----
+            // 2. Add the fast In-Memory DbContext
             services.AddDbContext<RaceDayDbContext>(options =>
                 options.UseInMemoryDatabase(_databaseName));
 
-            // ---- STEP 3: Swap in the fake weather service ----
+            // 3. Replace the Weather Service with our fake one
             services.RemoveAll<IWeatherService>();
             services.AddSingleton<IWeatherService, FakeWeatherService>();
 
-            // ---- STEP 4: Build the test database and seed it ----
-            var provider = services.BuildServiceProvider();
-            using var scope = provider.CreateScope();
+            // 4. CRITICAL FIX: Ensure the schema and HasData (Roles/Categories) are created
+            var sp = services.BuildServiceProvider();
+            using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<RaceDayDbContext>();
             db.Database.EnsureCreated();
-            DbSeeder.SeedAsync(db).GetAwaiter().GetResult();
         });
     }
 }

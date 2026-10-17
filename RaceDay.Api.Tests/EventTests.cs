@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Xunit;
 
 namespace RaceDay.Api.Tests;
 
@@ -48,7 +49,7 @@ public class EventTests : IClassFixture<RaceDayApiFactory>
     {
         var client = await TestHelpers.CreateOrganiserClientAsync(_factory);
 
-        var response = await client.PostasJsonAsync("/api/events", BuildValidEvent());
+        var response = await client.PostAsJsonAsync("/api/events", BuildValidEvent());
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }

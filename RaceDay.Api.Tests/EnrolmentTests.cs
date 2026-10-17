@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Xunit;
 
 namespace RaceDay.Api.Tests;
 
@@ -81,9 +82,14 @@ public class EnrolmentTests : IClassFixture<RaceDayApiFactory>
     [Fact]
     public async Task CaptureResult_AsOrganiser_Returns201_And_LeaderboardShowsIt()
     {
+        // 1. Create an enrolment first (so the test doesn't depend on other tests)
+        var participant = await TestHelpers.CreateParticipantClientAsync(_factory);
+        await participant.PostAsync("/api/events/3/enrol", null); // Enrol in Event 3
+
+        // 2. Now get the organiser and fetch enrolments for Event 3
         var organiser = await TestHelpers.CreateOrganiserClientAsync(_factory);
 
-        var enrolmentsResponse = await organiser.GetAsync("/api/events/1/enrolments");
+        var enrolmentsResponse = await organiser.GetAsync("/api/events/3/enrolments");
         enrolmentsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var enrolments = await enrolmentsResponse.Content.ReadFromJsonAsync<List<EnrolmentLookup>>();
@@ -91,24 +97,27 @@ public class EnrolmentTests : IClassFixture<RaceDayApiFactory>
 
         var enrolmentId = enrolments![0].EnrolmentId;
 
+        // 3. Capture the result
         var capture = await organiser.PostAsJsonAsync(
             $"/api/enrolments/{enrolmentId}/results",
             new { finishTime = "00:42:15", position = 1 });
 
         capture.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        // 4. Try to capture it again (should fail with 409)
         var duplicate = await organiser.PostAsJsonAsync(
             $"/api/enrolments/{enrolmentId}/results",
             new { finishTime = "00:45:00", position = 2 });
         duplicate.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
+        // 5. Check the public leaderboard
         var publicClient = _factory.CreateClient();
-        var leaderboard = await publicClient.GetAsync("/api/events/1/results");
+        var leaderboard = await publicClient.GetAsync("/api/events/3/results");
         leaderboard.StatusCode.Should().Be(HttpStatusCode.OK);
         (await leaderboard.Content.ReadAsStringAsync()).Should().Contain("00:42:15");
     }
 
-    private class Enrolmentlookup
+    private class EnrolmentLookup
     {
         public int EnrolmentId { get; set; }
         public int UserId { get; set; }

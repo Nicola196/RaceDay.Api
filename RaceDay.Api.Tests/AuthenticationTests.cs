@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Xunit; // <--- ADDED THIS LINE
 
 namespace RaceDay.Api.Tests;
 

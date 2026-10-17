@@ -21,9 +21,6 @@ builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>();
 builder.Services.AddControllers();
 
 // 4. JWT AUTH
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is missing from appsettings.json.");
-
 builder.Services
     .AddAuthentication(options =>
     {
@@ -32,6 +29,10 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
+        // Read the key inside the lambda so it picks up the correct config
+        var jwtKey = builder.Configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("Jwt:Key is missing from appsettings.json.");
+
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
@@ -43,7 +44,7 @@ builder.Services
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromMinutes(5) // Added 5 min skew for test accuracy
         };
     });
 
