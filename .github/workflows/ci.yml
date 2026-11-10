@@ -1,0 +1,32 @@
+name: RaceDay API and MVC CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore RaceDayApi.slnx
+
+    - name: Build API
+      run: dotnet build RaceDayApi/RaceDayApi.csproj --no-restore --configuration Release
+
+    - name: Build MVC
+      run: dotnet build RaceDay.Mvc/RaceDay.Mvc.csproj --no-restore --configuration Release
+
+    - name: Run Tests
+      run: dotnet test RaceDayApi.Tests/RaceDayApi.Tests.csproj --no-build --configuration Release --verbosity normal
