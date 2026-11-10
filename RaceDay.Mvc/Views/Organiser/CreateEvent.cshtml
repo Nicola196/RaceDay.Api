@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Create Event";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Create New Event</h2>
+        </div>
+        <div class="card-body">
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> @ViewBag.Error
+                </div>
+            }
+
+            <form asp-action="CreateEvent" method="post" enctype="multipart/form-data">
+
+                <div class="mb-3">
+                    <label class="form-label">Event Name</label>
+                    <input type="text" name="eventName" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="eventDescription" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="eventDate" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <input type="text" name="eventLocation" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Distance (e.g., 10km, 21km)</label>
+                    <input type="text" name="eventDistance" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Event Type</label>
+                    <select name="eventType" class="form-select">
+                        <option value="Run">Run</option>
+                        <option value="Walk">Walk</option>
+                        <option value="Cycle">Cycle</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Upload Event Image</label>
+                    <input type="file" name="eventImage" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">Create Event</button>
+                    <a asp-action="Dashboard" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

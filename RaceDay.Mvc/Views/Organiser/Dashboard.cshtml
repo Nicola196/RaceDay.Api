@@ -1,0 +1,40 @@
+﻿@model IEnumerable<RaceDay.Mvc.Controllers.EventDto>
+@{
+    ViewData["Title"] = "Organiser Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Events</h2>
+        <a asp-action="CreateEvent" class="btn btn-primary">+ Create New Event</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">You haven't created any events yet.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Event Name</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ev in Model)
+                {
+                    <tr>
+                        <td>@ev.EventName</td>
+                        <td>@ev.EventDate.ToShortDateString()</td>
+                        <td>@ev.Location</td>
+                        <td>@ev.EventType (@ev.Distance)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

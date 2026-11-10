@@ -1,0 +1,38 @@
+﻿@model IEnumerable<RaceDay.Mvc.Controllers.EventDto>
+@{
+    ViewData["Title"] = "Upcoming Events";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Upcoming Events</h2>
+        <span class="badge bg-secondary p-2">Logged in as: @Context.Session.GetString("FullName")</span>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row">
+        @foreach (var ev in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">@ev.EventName</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><strong>Date:</strong> @ev.EventDate.ToString("dd MMM yyyy")</p>
+                        <p class="card-text"><strong>Location:</strong> @ev.Location</p>
+                        <p class="card-text"><strong>Type:</strong> @ev.EventType (@ev.Distance)</p>
+                        <p class="card-text"><strong>Enrolled:</strong> @ev.EnrolmentCount people</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="/Participant/Enrol/@ev.EventId" class="btn btn-success w-100">Enrol Now</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
